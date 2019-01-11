@@ -40,8 +40,8 @@ m45 = requests.get(
 
 
 def sum(i5, i15, i30, i45):
-    s5 = len(m5) * 5
-    s15 = len(m15) * 15
+    s5 = len(i5) * 5
+    s15 = len(i15) * 15
     s30 = len(i30) * 30
     s45 = len(i45) * 45
     total_seconds = (s5 + s15 + s30 + s45)*60
