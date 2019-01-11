@@ -4,11 +4,12 @@ import os
 your_token = os.environ['TODOIST_KEY']
 tasks = 'https://beta.todoist.com/API/v8/tasks'
 project = input('Project: ')
+day = input('Day:')
 
 m5 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m5 & ##{}'.format(project)
+        "filter": '{} & @m5 & ##{}'.format(day, project)
     },
     headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
@@ -16,7 +17,7 @@ m5 = requests.get(
 m15 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m15 & ##{}'.format(project)
+        "filter": '{} & @m15 & ##{}'.format(day, project)
     },
     headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
@@ -24,7 +25,7 @@ m15 = requests.get(
 m30 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m30 & ##{}'.format(project)
+        "filter": '{} & @m30 & ##{}'.format(day, project)
     },
     headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
@@ -32,7 +33,7 @@ m30 = requests.get(
 m45 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m45 & ##{}'.format(project)
+        "filter": '{} & @m45 & ##{}'.format(day, project)
     },
     headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
