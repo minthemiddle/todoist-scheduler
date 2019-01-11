@@ -8,33 +8,33 @@ project = input('Project: ')
 m5 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m5 & ##%s' % project
-    }, 
-    headers={"Authorization": "Bearer %s" % your_token
+        "filter": 'today & @m5 & ##{}'.format(project)
+    },
+    headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
 
 m15 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m15 & ##%s' % project
-    }, 
-    headers={"Authorization": "Bearer %s" % your_token
+        "filter": 'today & @m15 & ##{}'.format(project)
+    },
+    headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
 
 m30 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m30 & ##%s' % project
-    }, 
-    headers={"Authorization": "Bearer %s" % your_token
+        "filter": 'today & @m30 & ##{}'.format(project)
+    },
+    headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
 
 m45 = requests.get(
     tasks,
     params={
-        "filter": 'today & @m45 & ##%s' % project
-    }, 
-    headers={"Authorization": "Bearer %s" % your_token
+        "filter": 'today & @m45 & ##{}'.format(project)
+    },
+    headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
 
 
