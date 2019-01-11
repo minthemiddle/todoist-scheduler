@@ -4,7 +4,7 @@ import os
 your_token = os.environ['TODOIST_KEY']
 tasks = 'https://beta.todoist.com/API/v8/tasks'
 project = input('Project: ')
-day = input('Day:')
+day = input('Day: ')
 
 m5 = requests.get(
     tasks,
@@ -56,4 +56,4 @@ def sum(i5, i15, i30, i45):
 
 
 print("Tasks: {}".format(count(m5,m15,m30,m45)))
-print(sum(m5,m15,m30,m45))
+print("ET: {}".format(sum(m5,m15,m30,m45)))
