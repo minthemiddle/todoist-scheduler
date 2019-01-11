@@ -38,6 +38,8 @@ m45 = requests.get(
     headers={"Authorization": "Bearer {}".format(your_token)
     }).json()
 
+def count(i5,i15,i30,i45):
+    return len(i5)+len(i15)+len(i30)+len(i45)
 
 def sum(i5, i15, i30, i45):
     s5 = len(i5) * 5
@@ -53,4 +55,5 @@ def sum(i5, i15, i30, i45):
     return my_len
 
 
+print("Tasks: {}".format(count(m5,m15,m30,m45)))
 print(sum(m5,m15,m30,m45))
