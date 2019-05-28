@@ -23,7 +23,7 @@ It will ask for a project name (e.g. `work`) and will calculate all estimations 
 
 ## Status und Contributions
 
-This is a very raw library to solve my problem. I hate that it is not fully object oriented yet and has 4 requests (3 too much, I guess) and quite repetitive code. Also, I don't like that I have to type in the project name (correctly).
+This is still a very basic script to solve my problem. I don't like that I have to type in the project name (correctly) and that the label names `m…` are hard-coded.
 
-Totally open to pull requests to improve the code quality and functionality!
+Totally open to pull requests to improve the code quality and extend the functionality!
 
