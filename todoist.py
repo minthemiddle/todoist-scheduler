@@ -1,47 +1,27 @@
-import requests
+#!/usr/bin/python3
+
+# Standard library imports.
 import os
+import sys
+# Third-party imports.
+import requests
+# No local imports.
 
-your_token = os.environ['TODOIST_KEY']
-tasks = 'https://beta.todoist.com/API/v8/tasks'
-project = input('Project: ')
-day = input('Day: ')
 
-m5 = requests.get(
-    tasks,
-    params={
-        "filter": '{} & @m5 & ##{}'.format(day, project)
-    },
-    headers={"Authorization": "Bearer {}".format(your_token)
-    }).json()
+def get_tasks(token, tasks_url, day, project, label):
+    filter_string = '{} & @{} & ##{}'.format(day, label, project)
+    auth_string = "Bearer {}".format(token)
+    response = requests.get(tasks,
+                            params={"filter": filter_string},
+                            headers={"Authorization": auth_string})
+    return response.json()
 
-m15 = requests.get(
-    tasks,
-    params={
-        "filter": '{} & @m15 & ##{}'.format(day, project)
-    },
-    headers={"Authorization": "Bearer {}".format(your_token)
-    }).json()
 
-m30 = requests.get(
-    tasks,
-    params={
-        "filter": '{} & @m30 & ##{}'.format(day, project)
-    },
-    headers={"Authorization": "Bearer {}".format(your_token)
-    }).json()
-
-m45 = requests.get(
-    tasks,
-    params={
-        "filter": '{} & @m45 & ##{}'.format(day, project)
-    },
-    headers={"Authorization": "Bearer {}".format(your_token)
-    }).json()
-
-def count(i5,i15,i30,i45):
+def count_tasks(i5,i15,i30,i45):
     return len(i5)+len(i15)+len(i30)+len(i45)
 
-def sum(i5, i15, i30, i45):
+
+def sum_tasks(i5, i15, i30, i45):
     s5 = len(i5) * 5
     s15 = len(i15) * 15
     s30 = len(i30) * 30
@@ -55,5 +35,24 @@ def sum(i5, i15, i30, i45):
     return my_len
 
 
-print("Tasks: {}".format(count(m5,m15,m30,m45)))
-print("ET: {}".format(sum(m5,m15,m30,m45)))
+if __name__ == "__main__":
+    # Collect script variables from user.
+    your_token = os.getenv('TODOIST_KEY', '')
+    if not your_token:
+        print("No API Key, did you set 'TODOIST_KEY' environment variable?")
+        sys.exit(1)
+    tasks = 'https://beta.todoist.com/API/v8/tasks'
+    project = input('Project: ')
+    day = input('Day: ')
+
+    # Collect tasks from Todoist API.
+    m5 = get_tasks(your_token, tasks, day, project, label="m5") 
+    m15 = get_tasks(your_token, tasks, day, project, label="m15") 
+    m30 = get_tasks(your_token, tasks, day, project, label="m30") 
+    m45 = get_tasks(your_token, tasks, day, project, label="m45") 
+
+    # Summarize tasks for user.
+    print("Task Count: {}".format(count_tasks(m5,m15,m30,m45)))
+    print("Estimated Time: {}".format(sum_tasks(m5,m15,m30,m45)))
+
+
