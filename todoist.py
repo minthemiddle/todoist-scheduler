@@ -41,7 +41,7 @@ if __name__ == "__main__":
     if not your_token:
         print("No API Key, did you set 'TODOIST_KEY' environment variable?")
         sys.exit(1)
-    tasks = 'https://beta.todoist.com/API/v8/tasks'
+    tasks = 'https://api.todoist.com/rest/v1/tasks'
     project = input('Project: ')
     day = input('Day: ')
 
