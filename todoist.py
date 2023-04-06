@@ -13,21 +13,37 @@ def read_config():
     return config["todoist"]
 
 
-def get_labels(token, labels_url):
+def get_labels(token):
+    labels_url = 'https://api.todoist.com/rest/v2/labels'
     auth_string = "Bearer {}".format(token)
     response = requests.get(labels_url,
                             headers={"Authorization": auth_string})
     return response.json()
 
 
-def get_tasks(token, tasks_url, day, label_id):
+def get_projects(token):
+    projects_url = 'https://api.todoist.com/rest/v2/projects'
     auth_string = "Bearer {}".format(token)
-    response = requests.get(tasks_url,
-                            params={"filter": day, "label": label_id},
+    response = requests.get(projects_url,
                             headers={"Authorization": auth_string})
-
     return response.json()
 
+
+def get_tasks(token, day):
+    tasks_url = 'https://api.todoist.com/rest/v2/tasks'
+    auth_string = "Bearer {}".format(token)
+
+    response = requests.get(tasks_url,
+                            params={"filter": day},
+                            headers={"Authorization": auth_string})
+    return response.json()
+
+
+def filter_tasks(tasks, label_id, project_id=None):
+    if project_id is None:
+        return [task for task in tasks if label_id in task["labels"]]
+    else:
+        return [task for task in tasks if task["project_id"] == project_id and label_id in task["labels"]]
 
 def count_tasks(task_dict):
     return sum(len(tasks) for tasks in task_dict.values())
@@ -46,29 +62,35 @@ if __name__ == "__main__":
     # Read config and get API key and default project name.
     config = read_config()
     your_token = config.get("api_key", "")
-    default_project_name = config.get("default_project_name", "")
 
     if not your_token:
         print("No API Key, did you set 'api_key' in .todoist_scheduler.conf?")
         sys.exit(1)
 
-    tasks_url = 'https://api.todoist.com/rest/v2/tasks'
-    labels_url = 'https://api.todoist.com/rest/v2/labels'
-    day = "today"   # Bcs usually it would be today
+    day = input('Day (leave empty for today): ') or "today"   # Bcs usually it would be today
+    project_name = input('Project (leave empty for all projects): ')
 
     # Get labels from Todoist API.
-    labels = get_labels(your_token, labels_url)
+    labels = get_labels(your_token)
+    projects = get_projects(your_token)
 
-    # Get tasks from Todoist API.
+    # Get project ID from project name.
+    project_id = [project["id"] for project in projects if project["name"] == project_name]
+    if project_id:
+        project_id = project_id[0]
+    else:
+        project_id = None
+
     # Detect labels like "25min".
     time_labels = {label["name"][:-3]: label["name"] for label in labels if label["name"].endswith("min") and label["name"][:-3].isdigit()}
 
-    # Collect tasks from Todoist API.
-    tasks_by_duration = {duration: get_tasks(your_token, tasks_url, day, label) for duration, label in time_labels.items()}
-    for duration, tasks in tasks_by_duration.items():
-        print("Duration: {}min".format(duration))
-        for task in tasks:
-            print("  {}".format(task["content"]))
+    # Get all tasks for today from Todoist API.
+    all_tasks = get_tasks(your_token, day)
+
+    # Filter tasks by project and label.
+    tasks_by_duration = {}
+    for duration, label_id in time_labels.items():
+        tasks_by_duration[duration] = filter_tasks(all_tasks, label_id, project_id)
 
     # Summarize tasks for user.
     print("Task Count: {}".format(count_tasks(tasks_by_duration)))
