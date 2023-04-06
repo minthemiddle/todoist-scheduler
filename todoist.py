@@ -5,8 +5,8 @@ import os
 import sys
 # Third-party imports.
 import requests
+from dotenv import load_dotenv
 # No local imports.
-
 
 def get_tasks(token, tasks_url, day, project, label):
     filter_string = '{} & @{} & ##{}'.format(day, label, project)
@@ -37,6 +37,7 @@ def sum_tasks(i5, i15, i30, i45):
 
 if __name__ == "__main__":
     # Collect script variables from user.
+    load_dotenv()
     your_token = os.getenv('TODOIST_KEY', '')
     if not your_token:
         print("No API Key, did you set 'TODOIST_KEY' environment variable?")
