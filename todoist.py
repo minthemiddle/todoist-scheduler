@@ -8,6 +8,7 @@ import requests
 from dotenv import load_dotenv
 # No local imports.
 
+
 def get_tasks(token, tasks_url, day, project, label):
     filter_string = '{} & @{} & ##{}'.format(day, label, project)
     auth_string = "Bearer {}".format(token)
@@ -42,15 +43,15 @@ if __name__ == "__main__":
     if not your_token:
         print("No API Key, did you set 'TODOIST_KEY' environment variable?")
         sys.exit(1)
-    tasks = 'https://api.todoist.com/rest/v1/tasks'
+    tasks = 'https://api.todoist.com/rest/v2/tasks'
     project = input('Project: ')
     day = input('Day: ')
 
     # Collect tasks from Todoist API.
-    m5 = get_tasks(your_token, tasks, day, project, label="m5") 
-    m15 = get_tasks(your_token, tasks, day, project, label="m15") 
-    m30 = get_tasks(your_token, tasks, day, project, label="m30") 
-    m45 = get_tasks(your_token, tasks, day, project, label="m45") 
+    m5 = get_tasks(your_token, tasks, day, project, label="m5")
+    m15 = get_tasks(your_token, tasks, day, project, label="m15")
+    m30 = get_tasks(your_token, tasks, day, project, label="m30")
+    m45 = get_tasks(your_token, tasks, day, project, label="m45")
 
     # Summarize tasks for user.
     print("Task Count: {}".format(count_tasks(m5,m15,m30,m45)))
