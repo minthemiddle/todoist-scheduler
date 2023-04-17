@@ -49,12 +49,14 @@ def count_tasks(task_dict):
     return sum(len(tasks) for tasks in task_dict.values())
 
 
-def sum_tasks(task_dict):
+def sum_tasks(task_dict, time_format="str"):
     total_seconds = sum(len(tasks) * int(duration) * 60 for duration, tasks in task_dict.items())
     hours = total_seconds // 3600
     minutes = total_seconds // 60 - hours * 60
 
     my_len = "%d:%02d" % (hours, minutes)
+    if time_format == "int":
+        my_len = total_seconds // 60
     return my_len
 
 
@@ -95,4 +97,31 @@ if __name__ == "__main__":
     # Summarize tasks for user.
     print("Task Count: {}".format(count_tasks(tasks_by_duration)))
     print("Estimated Time: {}".format(sum_tasks(tasks_by_duration)))
+
+    # Draw burndown chart in console
+    estimated_time_min = sum_tasks(tasks_by_duration, 'int')
+    real_time_values = []
+    while True:
+        real_time = input("Enter real time value for today's tasks (or 'q' to quit): ")
+        if real_time == 'q':
+            break
+        try:
+            real_time = int(real_time)
+            real_time_values.append(real_time)
+        except ValueError:
+            print("Invalid input. Please enter an integer or 'q' to quit.")
+            continue
+
+        remaining_time = estimated_time_min - sum(real_time_values)
+        if remaining_time <= 0:
+            print(f"You're done! (Remaining time is {remaining_time}.) Congratulations! :)")
+            break
+
+        chart = ""
+        for i in range(estimated_time_min, -1, -5):
+            if i <= remaining_time:
+                chart += "X "
+            else:
+                chart += "- "
+        print(chart)
 
