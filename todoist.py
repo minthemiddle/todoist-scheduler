@@ -1,58 +1,127 @@
 #!/usr/bin/python3
 
 # Standard library imports.
-import os
 import sys
+import configparser
 # Third-party imports.
 import requests
-# No local imports.
 
 
-def get_tasks(token, tasks_url, day, project, label):
-    filter_string = '{} & @{} & ##{}'.format(day, label, project)
+def read_config():
+    config = configparser.ConfigParser()
+    config.read(".todoist_scheduler.conf")
+    return config["todoist"]
+
+
+def get_labels(token):
+    labels_url = 'https://api.todoist.com/rest/v2/labels'
     auth_string = "Bearer {}".format(token)
-    response = requests.get(tasks,
-                            params={"filter": filter_string},
+    response = requests.get(labels_url,
                             headers={"Authorization": auth_string})
     return response.json()
 
 
-def count_tasks(i5,i15,i30,i45):
-    return len(i5)+len(i15)+len(i30)+len(i45)
+def get_projects(token):
+    projects_url = 'https://api.todoist.com/rest/v2/projects'
+    auth_string = "Bearer {}".format(token)
+    response = requests.get(projects_url,
+                            headers={"Authorization": auth_string})
+    return response.json()
 
 
-def sum_tasks(i5, i15, i30, i45):
-    s5 = len(i5) * 5
-    s15 = len(i15) * 15
-    s30 = len(i30) * 30
-    s45 = len(i45) * 45
-    total_seconds = (s5 + s15 + s30 + s45)*60
+def get_tasks(token, day):
+    tasks_url = 'https://api.todoist.com/rest/v2/tasks'
+    auth_string = "Bearer {}".format(token)
 
+    response = requests.get(tasks_url,
+                            params={"filter": day},
+                            headers={"Authorization": auth_string})
+    return response.json()
+
+
+def filter_tasks(tasks, label_id, project_id=None):
+    if project_id is None:
+        return [task for task in tasks if label_id in task["labels"]]
+    else:
+        return [task for task in tasks if task["project_id"] == project_id and label_id in task["labels"]]
+
+def count_tasks(task_dict):
+    return sum(len(tasks) for tasks in task_dict.values())
+
+
+def sum_tasks(task_dict, time_format="str"):
+    total_seconds = sum(len(tasks) * int(duration) * 60 for duration, tasks in task_dict.items())
     hours = total_seconds // 3600
     minutes = total_seconds // 60 - hours * 60
 
     my_len = "%d:%02d" % (hours, minutes)
+    if time_format == "int":
+        my_len = total_seconds // 60
     return my_len
 
 
 if __name__ == "__main__":
-    # Collect script variables from user.
-    your_token = os.getenv('TODOIST_KEY', '')
-    if not your_token:
-        print("No API Key, did you set 'TODOIST_KEY' environment variable?")
-        sys.exit(1)
-    tasks = 'https://api.todoist.com/rest/v1/tasks'
-    project = input('Project: ')
-    day = input('Day: ')
+    # Read config and get API key and default project name.
+    config = read_config()
+    your_token = config.get("api_key", "")
 
-    # Collect tasks from Todoist API.
-    m5 = get_tasks(your_token, tasks, day, project, label="m5") 
-    m15 = get_tasks(your_token, tasks, day, project, label="m15") 
-    m30 = get_tasks(your_token, tasks, day, project, label="m30") 
-    m45 = get_tasks(your_token, tasks, day, project, label="m45") 
+    if not your_token:
+        print("No API Key, did you set 'api_key' in .todoist_scheduler.conf?")
+        sys.exit(1)
+
+    day = input('Day (leave empty for today): ') or "today"   # Bcs usually it would be today
+    project_name = input('Project (leave empty for all projects): ')
+
+    # Get labels from Todoist API.
+    labels = get_labels(your_token)
+    projects = get_projects(your_token)
+
+    # Get project ID from project name.
+    project_id = [project["id"] for project in projects if project["name"] == project_name]
+    if project_id:
+        project_id = project_id[0]
+    else:
+        project_id = None
+
+    # Detect labels like "25min".
+    time_labels = {label["name"][:-3]: label["name"] for label in labels if label["name"].endswith("min") and label["name"][:-3].isdigit()}
+
+    # Get all tasks for today from Todoist API.
+    all_tasks = get_tasks(your_token, day)
+
+    # Filter tasks by project and label.
+    tasks_by_duration = {}
+    for duration, label_id in time_labels.items():
+        tasks_by_duration[duration] = filter_tasks(all_tasks, label_id, project_id)
 
     # Summarize tasks for user.
-    print("Task Count: {}".format(count_tasks(m5,m15,m30,m45)))
-    print("Estimated Time: {}".format(sum_tasks(m5,m15,m30,m45)))
+    print("Task Count: {}".format(count_tasks(tasks_by_duration)))
+    print("Estimated Time: {}".format(sum_tasks(tasks_by_duration)))
 
+    # Draw burndown chart in console
+    estimated_time_min = sum_tasks(tasks_by_duration, 'int')
+    real_time_values = []
+    while True:
+        real_time = input("Enter real time value for today's tasks (or 'q' to quit): ")
+        if real_time == 'q':
+            break
+        try:
+            real_time = int(real_time)
+            real_time_values.append(real_time)
+        except ValueError:
+            print("Invalid input. Please enter an integer or 'q' to quit.")
+            continue
+
+        remaining_time = estimated_time_min - sum(real_time_values)
+        if remaining_time <= 0:
+            print(f"You're done! (Remaining time is {remaining_time}.) Congratulations! :)")
+            break
+
+        chart = ""
+        for i in range(estimated_time_min, -1, -5):
+            if i <= remaining_time:
+                chart += "X "
+            else:
+                chart += "- "
+        print(chart)
 

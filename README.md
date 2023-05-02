@@ -11,12 +11,12 @@ Luckily, there are labels. And 4 different time slots are enough for most use ca
 
 ## How to get a sum of estimates for your whole day?
 
-- (Bash) `EXPORT TODOIST_KEY = 'your_key_here'` (or add to `.zshrc` or the like)
+- (Bash) `EXPORT TODOIST_KEY = 'your_key_here'` (or add to `.zshrc`, `.env` or the like)
 - `git clone git@github.com:minthemiddle/todoist-scheduler.git`
 - `cd todoist-scheduler`
 - (Create new virtualenv) `python3 -m venv myvenv`
 - (Activate on Linux/Mac) `source myvenv/bin/activate`
-- (Install `requests`) `pip3 install requests`
+- (Install dependencies) `pip3 install -r requirements.txt`
 - `python3 todoist.py`
 
 It will ask for a project name (e.g. `work`) and will calculate all estimations within this project and its subprojects.
